@@ -3,9 +3,9 @@
 // Ref: https://github.com/aws-samples/aws-cdk-examples/blob/master/typescript/ecs/fargate-application-load-balanced-service/index.ts
 import ec2 = require('@aws-cdk/aws-ec2');
 import ecs = require('@aws-cdk/aws-ecs');
+import ecr = require('@aws-cdk/aws-ecr');
 import ecs_patterns = require('@aws-cdk/aws-ecs-patterns');
 import cdk = require('@aws-cdk/core');
-import task_definition = require('@aws-cdk/aws-ecs');
 import iam = require('@aws-cdk/aws-iam');
 
 export class BlockshareInfraStack extends cdk.Stack {
@@ -27,10 +27,19 @@ export class BlockshareInfraStack extends cdk.Stack {
       roleName: 'blockshare-task-execution-role',
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
     });
-    const taskDefinition = new task_definition.FargateTaskDefinition(this, 'blockshare-task-definition', {
+    const taskDefinition = new ecs.FargateTaskDefinition(this, 'blockshare-task-definition', {
       executionRole: execution_role,
       taskRole: task_role,
+      memoryLimitMiB: 512,
+      cpu: 256
     });
+    const repository = new ecr.Repository(this, 'blockshare-repository', {repositoryName: 'blockshare'});
+    taskDefinition.addContainer('serviceTaskContainerDefinition', {
+      image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
+    }).addPortMappings({
+      containerPort: 80,
+      hostPort: 80,
+    })
 
     // Instantiate Fargate Service with just cluster and image
     new ecs_patterns.ApplicationLoadBalancedFargateService(this, "FargateService", {
