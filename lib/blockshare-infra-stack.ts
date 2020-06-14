@@ -34,8 +34,9 @@ export class BlockshareInfraStack extends cdk.Stack {
       cpu: 256
     });
     const repository = new ecr.Repository(this, 'blockshare-repository', {repositoryName: 'blockshare', removalPolicy: cdk.RemovalPolicy.DESTROY});
-    taskDefinition.addContainer('serviceTaskContainerDefinition', {
+    taskDefinition.addContainer('web', {
       image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
+      logging: new ecs.AwsLogDriver({ streamPrefix: 'blockshare-web' })
     }).addPortMappings({
       containerPort: 80,
       hostPort: 80,
