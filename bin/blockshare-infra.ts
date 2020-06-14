@@ -6,7 +6,7 @@ import { BlockshareInfraStack } from '../lib/blockshare-infra-stack';
 const app = new cdk.App();
 new BlockshareInfraStack(app, 'BlockshareInfraStack', {
     env: {
-     region: 'ap-northeast-1',
+     region: 'us-east-1',
     }
 });
 
