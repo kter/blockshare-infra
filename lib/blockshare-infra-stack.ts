@@ -33,7 +33,7 @@ export class BlockshareInfraStack extends cdk.Stack {
       memoryLimitMiB: 512,
       cpu: 256
     });
-    const repository = new ecr.Repository(this, 'blockshare-repository', {repositoryName: 'blockshare'});
+    const repository = new ecr.Repository(this, 'blockshare-repository', {repositoryName: 'blockshare', removalPolicy: cdk.RemovalPolicy.DESTROY});
     taskDefinition.addContainer('serviceTaskContainerDefinition', {
       image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
     }).addPortMappings({
