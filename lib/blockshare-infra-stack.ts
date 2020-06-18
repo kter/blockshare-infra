@@ -15,7 +15,10 @@ export class BlockshareInfraStack extends cdk.Stack {
     // Create VPC and Fargate Cluster
     // NOTE: Limit AZs to avoid reaching resource quotas
     const vpc = new ec2.Vpc(this, 'MyVpc', { maxAzs: 2 });
-    const cluster = new ecs.Cluster(this, 'Cluster', { vpc });
+    const cluster = new ecs.Cluster(this, 'Cluster', {
+      vpc: vpc,
+      clusterName: 'blockshare'
+    });
     const execution_role = new iam.Role(this, 'executionRole', {
       roleName: 'blockshare-task-role',
       assumedBy: new iam.ServicePrincipal('ecs-tasks.amazonaws.com'),
@@ -34,7 +37,7 @@ export class BlockshareInfraStack extends cdk.Stack {
       cpu: 256
     });
     const repository = new ecr.Repository(this, 'blockshare-repository', {repositoryName: 'blockshare', removalPolicy: cdk.RemovalPolicy.DESTROY});
-    taskDefinition.addContainer('web', {
+    taskDefinition.addContainer('app', {
       image: ecs.ContainerImage.fromEcrRepository(repository, 'latest'),
       logging: new ecs.AwsLogDriver({ streamPrefix: 'blockshare-web' })
     }).addPortMappings({
@@ -46,6 +49,7 @@ export class BlockshareInfraStack extends cdk.Stack {
     new ecs_patterns.ApplicationLoadBalancedFargateService(this, "FargateService", {
       cluster,
       taskDefinition: taskDefinition,
+      serviceName: 'web',
     });
   }
 }
