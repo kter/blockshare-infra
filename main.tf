@@ -13,6 +13,7 @@ variable "env" {
 }
 
 
+// TODO: use aws_elb_service_account
 module "caller_identity" {
   source = "./modules/caller_identity"
 }
