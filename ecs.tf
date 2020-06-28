@@ -158,7 +158,7 @@ data "aws_iam_policy_document" "cloudwatch_logs" {
 module "cloudwatch_logs_role" {
   source = "./modules/iam_role"
   name = "cloudwatch-logs"
-  identifier = "log.us-east-1.amazonaws.com"
+  identifier = "log.amazonaws.com"
   policy = data.aws_iam_policy_document.cloudwatch_logs.json
 }
 

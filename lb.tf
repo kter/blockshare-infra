@@ -42,7 +42,7 @@ resource "aws_lb" "main" {
   ]
 
   access_logs {
-    bucket  = aws_s3_bucket.alb_log.id
+    bucket  = aws_s3_bucket.alb_log.bucket
     enabled = true
   }
 
