@@ -8,6 +8,8 @@ data "template_file" "container_definition_json" {
   vars = {
     log_group = "${var.env}-${local.project_name}"
     log_prefix = "${local.project_name}-web"
+    account_id = module.caller_identity.account_id
+    project_name = local.project_name
   }
 }
 
@@ -85,3 +87,85 @@ module "ecs_task_execution_role" {
   policy     = data.aws_iam_policy_document.ecs_task_execution.json
 }
 
+resource "aws_ssm_parameter" "db_raw_password" {
+  name = "/db/password"
+  value = var.db_pass
+  type = "SecureString"
+}
+
+resource "aws_s3_bucket" "cloudwatch_logs" {
+  bucket = "${var.env}-${local.project_name}"
+  lifecycle_rule {
+    enabled = true
+
+    expiration {
+      days = "180"
+    }
+  }
+}
+
+data "aws_iam_policy_document" "kinesis_data_firehose" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:AbortMultipartUpload",
+      "s3:GetBucketLocation",
+      "s3:GetObject",
+      "s3:ListBucket",
+      "s3:ListBucketMultipartUploads",
+      "s3:PutObject",
+    ]
+    resources = [
+      "arn:aws:s3:::${aws_s3_bucket.cloudwatch_logs.id}",
+      "arn:aws:s3:::${aws_s3_bucket.cloudwatch_logs.id}/*",
+    ]
+  }
+}
+
+module "kinesis_data_firehose_role" {
+  source = "./modules/iam_role"
+  name = "kinesis-data-firehose"
+  identifier = "firehose.amazonaws.com"
+  policy = data.aws_iam_policy_document.kinesis_data_firehose.json
+}
+
+
+resource "aws_kinesis_firehose_delivery_stream" "main" {
+  destination = "s3"
+  name = "main"
+
+  s3_configuration {
+    role_arn = module.kinesis_data_firehose_role.iam_role_arn
+    bucket_arn = aws_s3_bucket.cloudwatch_logs.arn
+    prefix = "ecs/main/"
+  }
+}
+
+data "aws_iam_policy_document" "cloudwatch_logs" {
+  statement {
+    effect = "Allow"
+    actions = ["firehose:*"]
+    resources = ["arn:aws:firehose:us-east-1:*:*"]
+  }
+  statement {
+    effect = "Allow"
+    actions = ["iam:PassRole"]
+    resources = ["arn:aws:iam::*:role/cloudwatch-logs"]
+
+  }
+}
+
+module "cloudwatch_logs_role" {
+  source = "./modules/iam_role"
+  name = "cloudwatch-logs"
+  identifier = "log.us-east-1.amazonaws.com"
+  policy = data.aws_iam_policy_document.cloudwatch_logs.json
+}
+
+resource "aws_cloudwatch_log_subscription_filter" "main" {
+  name = "main"
+  log_group_name = "aws_cloudwatch_log_group.for_ecs.name"
+  destination_arn = aws_kinesis_firehose_delivery_stream.main.arn
+  filter_pattern = "[]"
+  role_arn = module.cloudwatch_logs_role.iam_role_arn
+}

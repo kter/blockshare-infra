@@ -35,13 +35,18 @@
     "dnsServers": [],
     "mountPoints": [],
     "workingDirectory": null,
-    "secrets": [],
+    "secrets": [
+      {
+        "name": "DB_PASS",
+        "valueFrom": "/db/password"
+      }
+    ],
     "dockerSecurityOptions": [],
     "memory": null,
     "memoryReservation": null,
     "volumesFrom": [],
     "stopTimeout": null,
-    "image": "848738341109.dkr.ecr.us-east-1.amazonaws.com/blockshare:latest",
+    "image": "${account_id}.dkr.ecr.us-east-1.amazonaws.com/${project_name}:latest",
     "startTimeout": null,
     "firelensConfiguration": null,
     "dependsOn": null,

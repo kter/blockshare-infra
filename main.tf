@@ -12,6 +12,10 @@ variable "env" {
   default = "stg"
 }
 
+variable "db_pass" {
+  default = "password"
+}
+
 
 // TODO: use aws_elb_service_account
 module "caller_identity" {
