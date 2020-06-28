@@ -89,6 +89,7 @@ resource "aws_route53_record" "main_certificate" {
   records = [aws_acm_certificate.main.domain_validation_options[0].resource_record_value]
   zone_id = data.aws_route53_zone.main.id
   ttl     = 60
+  allow_overwrite = true
 }
 
 
