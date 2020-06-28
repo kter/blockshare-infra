@@ -16,6 +16,13 @@ variable "db_pass" {
   default = "password"
 }
 
+terraform {
+  backend "s3" {
+    bucket = "terraform.blockshare.tomohiko.io"
+    key = "blockshare/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
 
 // TODO: use aws_elb_service_account
 module "caller_identity" {
