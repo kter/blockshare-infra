@@ -13,7 +13,7 @@ resource "aws_db_parameter_group" "main" {
   }
 }
 
-resource "aws_db_option_group" "main" {
+resource "aws_db_option_group" "main1" {
   name                 = "main"
   engine_name          = "mysql"
   major_engine_version = "5.7"
@@ -41,17 +41,15 @@ resource "aws_db_instance" "main" {
   password                   = var.db_pass
   multi_az                   = true
   publicly_accessible        = false
-  backup_window              = "09:10-09:40"
-  backup_retention_period    = 30
   maintenance_window         = "mon:10:10-mon:10:40"
   auto_minor_version_upgrade = false
-  deletion_protection        = true
-  skip_final_snapshot        = false
+  deletion_protection        = false
+  skip_final_snapshot        = true
   port                       = 3306
   apply_immediately          = false
   vpc_security_group_ids     = [module.mysql_sg.security_group_id]
   parameter_group_name       = aws_db_parameter_group.main.name
-  option_group_name          = aws_db_option_group.main.name
+  option_group_name          = aws_db_option_group.main1.name
   db_subnet_group_name       = aws_db_subnet_group.main.name
 
   // lifecycle {
