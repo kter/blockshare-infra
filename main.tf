@@ -5,6 +5,7 @@ provider "aws" {
 
 locals {
   project_name = "bloskshare"
+  domain = "tomohiko.io"
 }
 
 variable "env" {
