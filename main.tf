@@ -4,7 +4,7 @@ provider "aws" {
 }
 
 locals {
-  project_name = "bloskshare"
+  project_name = "blockshare"
   domain = "tomohiko.io"
 }
 

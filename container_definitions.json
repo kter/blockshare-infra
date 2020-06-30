@@ -63,6 +63,6 @@
     "dockerLabels": {},
     "systemControls": [],
     "privileged": null,
-    "name": "app"
+    "name": "main"
   }
 ]

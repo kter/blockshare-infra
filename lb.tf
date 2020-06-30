@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "alb_log" {
-  bucket = "${var.env}-${local.project_name}"
+  bucket = "${var.env}.alb.logs.${local.project_name}"
   force_destroy = true
 
   lifecycle_rule {
@@ -24,7 +24,8 @@ data "aws_iam_policy_document" "alb_log" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${module.caller_identity.account_id}"]
+      // リージョンごとに違うので注意
+      identifiers = ["127311923021"]
     }
   }
 }
@@ -94,7 +95,7 @@ data "aws_route53_zone" "main" {
 
 resource "aws_route53_record" "main" {
   zone_id = data.aws_route53_zone.main.zone_id
-  name    = data.aws_route53_zone.main.name
+  name    = "${local.project_name}.${data.aws_route53_zone.main.name}"
   type    = "A"
 
   alias {

@@ -94,7 +94,9 @@ resource "aws_ssm_parameter" "db_raw_password" {
 }
 
 resource "aws_s3_bucket" "cloudwatch_logs" {
-  bucket = "${var.env}-${local.project_name}"
+  bucket = "${var.env}.app.logs.${local.project_name}"
+  force_destroy = true
+
   lifecycle_rule {
     enabled = true
 
@@ -151,20 +153,19 @@ data "aws_iam_policy_document" "cloudwatch_logs" {
     effect = "Allow"
     actions = ["iam:PassRole"]
     resources = ["arn:aws:iam::*:role/cloudwatch-logs"]
-
   }
 }
 
 module "cloudwatch_logs_role" {
   source = "./modules/iam_role"
   name = "cloudwatch-logs"
-  identifier = "log.amazonaws.com"
+  identifier = "logs.us-east-1.amazonaws.com"
   policy = data.aws_iam_policy_document.cloudwatch_logs.json
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "main" {
   name = "main"
-  log_group_name = "aws_cloudwatch_log_group.for_ecs.name"
+  log_group_name = aws_cloudwatch_log_group.for_ecs.name
   destination_arn = aws_kinesis_firehose_delivery_stream.main.arn
   filter_pattern = "[]"
   role_arn = module.cloudwatch_logs_role.iam_role_arn
